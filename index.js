@@ -2,6 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
 require('dotenv').config();
+const cors = require('cors');
+app.use(cors());
 
 const userRoutes = require('./Routes/UserRoutes');
 const userAccountRoutes = require('./Routes/UserAccountRoutes');
@@ -16,8 +18,8 @@ mongoose.connect(process.env.MONGO_URL)
     console.log(err);
 });
 
-app.use('/api', userRoutes);
-app.use('/api', userAccountRoutes);
+app.use('/users', userRoutes);
+app.use('/users/accounts', userAccountRoutes);
 
 const port = 8081 || process.env.PORT;
 app.listen(port, () => {
