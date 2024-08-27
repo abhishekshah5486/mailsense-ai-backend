@@ -3,8 +3,11 @@ const mongoose = require('mongoose');
 const app = express();
 require('dotenv').config();
 
-app.use(express.json());
+const userRoutes = require('./Routes/UserRoutes');
+const userAccountRoutes = require('./Routes/UserAccountRoutes');
 
+app.use(express.json());
+// Connect to MongoDB Database
 mongoose.connect(process.env.MONGO_URL)
 .then(() => {
     console.log("Connected to MongoDB");
@@ -13,30 +16,10 @@ mongoose.connect(process.env.MONGO_URL)
     console.log(err);
 });
 
-const productSchema = new mongoose.Schema({
-    product_name: {
-        type: String,
-        required: true
-    }
-});
-
-const productModel = new mongoose.model("Product", productSchema);
-// Create a product
-app.post('/product', async (req, res) => {
-    const product = productModel.create({
-        product_name: req.body.product_name
-    })
-    console.log(product);
-    return res.status(201).json({
-        message: "Product created successfully"
-    });
-});
+app.use('/api', userRoutes);
+app.use('/api', userAccountRoutes);
 
 const port = 8081 || process.env.PORT;
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
-
-// const username = "abhishekshah5486";
-// const password = "i8SBTBdZyySqPNdG";
-// const mongoURL = "mongodb+srv://abhishekshah5486:<db_password>@cluster0.szhpw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
