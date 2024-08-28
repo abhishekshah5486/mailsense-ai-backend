@@ -21,7 +21,7 @@ mongoose.connect(process.env.MONGO_URL)
 
 app.use('/users', userRoutes);
 app.use('/users/accounts', userAccountRoutes);
-app.use('/auth/gmail', gmailAuthRoutes);
+app.use('', gmailAuthRoutes);
 
 const port = 8081 || process.env.PORT;
 app.listen(port, () => {

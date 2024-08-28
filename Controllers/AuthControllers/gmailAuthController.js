@@ -1,5 +1,16 @@
 const express = require('express');
+const { google } = require('googleapis');
+const jwt = require('jsonwebtoken');
+const axios = require('axios');
+
 require('dotenv').config();
+const { saveUserToDb } = require('../../Controllers/UserAccountController');
+
+const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URL
+);
 
 exports.getGoogleAuthUrl = async (req, res) => {
     try {
@@ -39,5 +50,78 @@ exports.getGoogleAuthUrl = async (req, res) => {
             message: "Server error",
             error: err.message
         });
+    }
+}
+
+exports.handleAuthCallback = async (req, res) =>{
+    const { code , state } = req.query;
+    const userId = state;
+    if (!code) {
+        return res.status(400).json({
+            error: 'Authorization unsuccessful',
+            message: 'No authorization code received from Google'
+        });
+    }
+
+    await saveUser(code, userId);
+}
+
+async function saveUser(code , userId){
+    const { data } = await axios.post('https://oauth2.googleapis.com/token', {
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        redirect_uri: process.env.GOOGLE_REDIRECT_URL,
+        grant_type: 'authorization_code',
+      });
+
+      const { email, iss } = await getUserEmail(data.id_token);
+      
+      await saveUserToDb({
+        userId : userId,
+        accountEmail : email,
+        iss : iss,
+        accessToken: data.access_token,
+        refreshToken: data.refresh_token,
+        expiresIn: data.expires_in
+      });
+      oauth2Client.setCredentials({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+        expiry_date: (new Date()).getTime() + (45*60 * 1000)
+      });
+
+    const watchResponse = await setupGmailWatch(oauth2Client);
+
+    return watchResponse;
+}
+
+async function setupGmailWatch(auth) {
+    try {
+        const gmail = google.gmail({ version: 'v1', auth });
+        const watchResponse = await gmail.users.watch({
+            userId: 'me',
+            requestBody: {
+                topicName: `projects/${process.env.PROJECT_ID}/topics/${process.env.TOPIC_NAME}`,
+                labelIds: ['INBOX'],
+            },
+        });
+
+        return watchResponse.data;
+    } catch (error) {
+        console.error('Error during watch setup:', error);
+        throw error;
+    }
+}
+
+async function getUserEmail(idToken){
+    try {
+        const decoded = jwt.decode(idToken);
+        
+        return { email: decoded.email, iss: decoded.iss };
+
+    } catch (err) {
+        console.error('Error decoding JWT:', err);
+        return null;
     }
 }
