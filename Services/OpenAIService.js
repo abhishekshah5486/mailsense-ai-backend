@@ -20,4 +20,4 @@ const generateResponse = async (thread) => {
 
 module.exports = {
     generateResponse,
-};
+}
