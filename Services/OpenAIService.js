@@ -88,7 +88,12 @@ const generateResponse = async (thread) => {
             messages: formattedThread,
         })
         // Extract and return the generated message from the response
-        return response.choices[0].message.content;
+        const fromEmail = retrieveEmailFromString(thread[thread.length-1]["to"]);
+        return {
+            from: fromEmail,
+            body: response.data.choices[0].message.content,
+            label: "Interested",
+        }
     } catch (err) {
         throw err;
     }
