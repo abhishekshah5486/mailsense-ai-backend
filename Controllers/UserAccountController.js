@@ -1,6 +1,7 @@
 const userAccountModel = require('../Models/UserAccountModel');
 const {connectDB} = require('../Database/connectDB');
 const path = require('path');
+const { tryCatch } = require('bullmq');
 
 require('dotenv').config({path: path.join(__dirname, '../.env')});
 
@@ -103,7 +104,7 @@ async function generateNewAccessToken(email , refreshToken){
 }
 
 // Update access token by email
-exports.updateAccessTokenByEmail = async (email, newAccessToken) => {
+const updateAccessTokenByEmail = async (email, newAccessToken) => {
     try {
         const updatedUserAccount = await userAccountModel.findOneAndUpdate(
             {accountEmail: email}, 
@@ -121,7 +122,7 @@ exports.updateAccessTokenByEmail = async (email, newAccessToken) => {
 }
 
 // Update expiresAt by email
-exports.updateExpiresAtByEmail = async (email, newExpiresAt) => {
+const updateExpiresAtByEmail = async (email, newExpiresAt) => {
     try {
         const updatedUserAccount = await userAccountModel.findOneAndUpdate(
             {accountEmail: email}, 
@@ -135,5 +136,19 @@ exports.updateExpiresAtByEmail = async (email, newExpiresAt) => {
     } catch (err) {
         console.error(`Error updating expiresAt for email ${email}:`, err.message);
         throw new Error(`Failed to update expiresAt for email ${email}. Please try again later.`);
+    }
+}
+
+// Delete user account by email
+exports.deleteUserAccountByEmail = async (email) => {
+    try {
+        const deletedUserAccount = await userAccountModel.findOneAndDelete({accountEmail: email});
+        if (deletedUserAccount) return deletedUserAccount;
+        else {
+            throw new Error(`No user found with email: ${email}`);
+        }
+    } catch (err) {
+        console.error('Error deleting user account:', err);
+        throw err;
     }
 }

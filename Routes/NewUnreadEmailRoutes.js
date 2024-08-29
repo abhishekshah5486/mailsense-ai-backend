@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {addJob} = require('../Task-Scheduler/producer');
+const {addJob} = require('../TaskScheduler/Producer');
 
 
 router.post('/notifications', async (req, res) => {

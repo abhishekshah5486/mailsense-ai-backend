@@ -100,8 +100,6 @@ async function saveUser(code , userId, timestamp){
 }
 
 async function setupGmailWatch(auth) {
-    console.log(auth.acccess_token);
-    console.log(auth.refresh_token);
     try {
         const gmail = google.gmail({ version: 'v1', auth });
         const watchResponse = await gmail.users.watch({

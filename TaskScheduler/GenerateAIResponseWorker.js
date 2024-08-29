@@ -9,8 +9,8 @@ const {addJob3} = require('./Producer');
  
 const generateResponseWorker = new Worker('newEmails-queue', async (job) => {
   connectDB();
-  // console.log(`Worker 2 processing job ${job.id}`);
-  // console.log(job.data);
+  console.log(`Worker 2 processing job ${job.id}`);
+  console.log(job.data);
   const emailData  = await generateResponse(job.data.thread);
 
 
@@ -25,8 +25,7 @@ const generateResponseWorker = new Worker('newEmails-queue', async (job) => {
       originalMessageData : job.data.originalMessage
     }
 
-    const response 
-    = await addJob3(finalResponse);
+    const response = await addJob3(finalResponse);
     return response;
   }
 

@@ -12,7 +12,8 @@ const getEmailWorker = new Worker('email-queue', async (job) => {
   // console.log(`Worker 1 processing job ${job.id}`);
 
   const emailData = await manageNewEmail(job.data);
-  // console.log("got email data ");
+  console.log("got email data ");
+    console.log(emailData);
 
   const response 
   = await addJob2(emailData);
