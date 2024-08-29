@@ -1,4 +1,8 @@
 const userAccountModel = require('../Models/UserAccountModel');
+const {connectDB} = require('../Database/connectDB');
+const path = require('path');
+
+require('dotenv').config({path: path.join(__dirname, '../.env')});
 
 exports.saveUserToDb = async (userAccountDetails) => {
     try {
@@ -32,6 +36,7 @@ exports.saveUserToDb = async (userAccountDetails) => {
 // Retrieve refresh token by email
 exports.getRefreshTokenByEmail = async (email) => {
     try {
+        await connectDB();
         const userAccount = await userAccountModel.findOne({accountEmail: email});
         return userAccount.refreshToken;
     }
@@ -59,6 +64,41 @@ exports.getAccessToken = async(email)=>{
         console.error('Error getting refresh token:', err);
         throw err;
     }
+
+}
+
+// Method to generate a new access token using the refresh token
+async function generateNewAccessToken(email , refreshToken){
+    const url = 'https://oauth2.googleapis.com/token';
+  
+  const params = new URLSearchParams();
+  params.append('client_id', process.env.GOOGLE_CLIENT_ID);
+  params.append('client_secret', process.env.GOOGLE_CLIENT_SECRET);
+  params.append('refresh_token', refreshToken);
+  params.append('grant_type', 'refresh_token');
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    //save the new access token to the database
+    await updateAccessTokenByEmail(email , data.access_token);
+    await updateExpiresAtByEmail(email , Date.now() + (45*60*1000));
+
+    return data.access_token;
+  } catch (error) {
+    console.error('Failed to refresh access token:', error);
+  }
 
 }
 
