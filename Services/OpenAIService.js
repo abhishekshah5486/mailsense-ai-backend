@@ -52,6 +52,17 @@ Sample 2:
     Assistant: "Sure. If you want to add something more than what's in the assignment, it is upto you.\nYou can add the demo video in the github repo's README file."
 `;
 
+
+function retrieveEmailFromString(emailString) {
+    const arr = emailString.split(' ');
+    const lastElementValue = arr[arr.length - 1];
+
+    if (lastElementValue.includes('<') && lastElementValue.includes('>')) {
+        return lastElementValue.substring(lastElementValue.indexOf('<') + 1, lastElementValue.indexOf('>')).trim();
+    }
+    else return lastElementValue.trim();
+}
+
 // Format the thread of messages and generate a response
 const formattedEmailThread = (thread) => {
     const userEmail = thread[thread.length - 1]["to"];
@@ -82,6 +93,7 @@ const generateResponse = async (thread) => {
         throw err;
     }
 }
+
 module.exports = {
     generateResponse,
 }

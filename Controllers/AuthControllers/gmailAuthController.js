@@ -2,14 +2,15 @@ const express = require('express');
 const { google } = require('googleapis');
 const jwt = require('jsonwebtoken');
 const axios = require('axios');
+const path = require('path');
 
-require('dotenv').config();
+require('dotenv').config({path: path.join(__dirname, '../../.env')});
 const { saveUserToDb } = require('../../Controllers/UserAccountController');
 
 const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URL
+    process.env.GOOGLEAUTH_REDIRECT_URI
 );
 
 exports.getGoogleAuthUrl = async (req, res) => {
@@ -21,7 +22,7 @@ exports.getGoogleAuthUrl = async (req, res) => {
             const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
         
             const options = {
-                redirect_uri: String(process.env.GOOGLE_REDIRECT_URI),
+                redirect_uri: String(process.env.GOOGLEAUTH_REDIRECT_URI),
                 client_id: String(process.env.GOOGLE_CLIENT_ID),
                 access_type: 'offline',
                 response_type: 'code',
@@ -63,15 +64,17 @@ exports.handleAuthCallback = async (req, res) =>{
         });
     }
 
-    await saveUser(code, userId);
+    await saveUser(code, userId, Date.now());
+    const redirectUrl = 'http://localhost:3000/home/email-accounts';
+    return res.redirect(redirectUrl);
 }
 
-async function saveUser(code , userId){
+async function saveUser(code , userId, timestamp){
     const { data } = await axios.post('https://oauth2.googleapis.com/token', {
         code,
         client_id: process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: process.env.GOOGLE_REDIRECT_URL,
+        redirect_uri: process.env.GOOGLEAUTH_REDIRECT_URI,
         grant_type: 'authorization_code',
       });
 
@@ -83,7 +86,7 @@ async function saveUser(code , userId){
         iss : iss,
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
-        expiresIn: data.expires_in
+        expiresIn: timestamp + (45*60 * 1000),
       });
       oauth2Client.setCredentials({
         access_token: data.access_token,
@@ -97,6 +100,8 @@ async function saveUser(code , userId){
 }
 
 async function setupGmailWatch(auth) {
+    console.log(auth.acccess_token);
+    console.log(auth.refresh_token);
     try {
         const gmail = google.gmail({ version: 'v1', auth });
         const watchResponse = await gmail.users.watch({

@@ -2,6 +2,11 @@ const userAccountModel = require('../Models/UserAccountModel');
 
 exports.saveUserToDb = async (userAccountDetails) => {
     try {
+        // Check if the user already exists in the database
+        const existingUser = await userAccountModel.findOne({accountEmail: userAccountDetails.accountEmail});
+        if (existingUser) {
+            return;
+        }
         let accountType = 'OUTLOOK';
         if (userAccountDetails.iss === 'https://accounts.google.com') {
             accountType = 'GMAIL';
@@ -34,6 +39,27 @@ exports.getRefreshTokenByEmail = async (email) => {
         console.error('Error getting refresh token:', err);
         throw err;
     }
+}
+
+// Retrieve access token by email and generate new access token if expired
+exports.getAccessToken = async(email)=>{
+    try {
+        await connectDB();
+        const userAccount = await userAccountModel.findOne({accountEmail: email});
+        // console.log('userAccount:', userAccount);
+        let accessToken = userAccount.accessToken;
+        let expiresAt = userAccount.expiresAt;
+
+        if(expiresAt <= Date.now()){
+            accessToken = await generateNewAccessToken(email , userAccount.refreshToken);
+        }
+        return accessToken;
+    }
+    catch (err) {
+        console.error('Error getting refresh token:', err);
+        throw err;
+    }
+
 }
 
 // Update access token by email
