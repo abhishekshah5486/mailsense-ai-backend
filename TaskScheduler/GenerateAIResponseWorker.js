@@ -1,9 +1,9 @@
 const { Worker } = require('bullmq');
 const Redis = require('ioredis');
-const { connection } = require('./bullmq-config');
+const { connection } = require('./BullMQConfig');
 const {connectDB} = require('../Database/connectDB');
 const { generateResponse } = require('../Services/OpenAIService');
-const {addJob3} = require('./producer');
+const {addJob3} = require('./Producer');
 
 // const redisClient = new Redis();
  
