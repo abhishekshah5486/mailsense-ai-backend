@@ -1,0 +1,1 @@
+const {sendEmailWorker} = require('./SendEmailWorker.js');
