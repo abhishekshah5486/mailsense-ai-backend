@@ -152,3 +152,22 @@ exports.deleteUserAccountByEmail = async (email) => {
         throw err;
     }
 }
+
+// Fetch all users accounts for a user id
+exports.retrieveAllUserAccountsByUserId =  async (req, res) => {
+    try {
+        const userId = req.params.userId;
+    } catch (err) {
+        
+    }
+}
+
+// Fetch all users accounts for an email account
+exports.retrieveAllUserAccountsByEmail =  async (req, res) => {
+    try {
+        const email = req.body.email;
+        // const retrievedUserAccounts = await userAccountModel.find;
+    } catch (err) {
+        
+    }
+}
