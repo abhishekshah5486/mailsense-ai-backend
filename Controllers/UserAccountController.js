@@ -157,17 +157,25 @@ exports.deleteUserAccountByEmail = async (email) => {
 exports.retrieveAllUserAccountsByUserId =  async (req, res) => {
     try {
         const userId = req.params.userId;
-    } catch (err) {
-        
-    }
-}
+        const retrievedUserAccounts = await userAccountModel.find({userId: userId});
 
-// Fetch all users accounts for an email account
-exports.retrieveAllUserAccountsByEmail =  async (req, res) => {
-    try {
-        const email = req.body.email;
-        // const retrievedUserAccounts = await userAccountModel.find;
+        // Return an array of objects containing only accountEmail and accountType
+        const filteredUserAccounts = retrievedUserAccounts.map((userAccount) => {
+            return {
+                accountEmail: userAccount.accountEmail,
+                accountType: userAccount.accountType
+            }
+        })
+        return res.status(200).json({
+            success: true,
+            message: 'User accounts retrieved successfully',
+            userAccounts: filteredUserAccounts
+        });
     } catch (err) {
-        
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to retrieve user accounts',
+            error: err.message
+        });
     }
 }
