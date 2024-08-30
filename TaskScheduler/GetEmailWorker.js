@@ -11,13 +11,19 @@ const getEmailWorker = new Worker('email-queue', async (job) => {
   connectDB();
   // console.log(`Worker 1 processing job ${job.id}`);
 
+  // console.log("calling manage new email ",job.data);
   const emailData = await manageNewEmail(job.data);
   console.log("got email data ");
     console.log(emailData);
 
-  const response 
-  = await addJob2(emailData);
-  return response;
+    if(emailData==null){
+      console.log("No new emails in inbox");
+    }
+    else{
+      const response = await addJob2(emailData);
+      return response;
+    }
+  
   
 }, {
     connection ,

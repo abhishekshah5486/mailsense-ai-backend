@@ -29,7 +29,7 @@ async function manageNewEmail(userData){
         } else {
             message = JSON.parse(userData.toString());
         }
-        console.log(userData);
+        // console.log("received user data in manage new email " , userData);
         if (message.message && message.message.data) {
             const decodedData = JSON.parse(Buffer.from(message.message.data, 'base64').toString());
 
@@ -44,6 +44,8 @@ async function manageNewEmail(userData){
             // await processNewEmail(decodedData.emailAddress, messageId, refreshToken);
             let authClient = await createAuthClient(refreshToken , accessToken);
             let allMessages = await retrieveThreadFromMessage(authClient , messageId);
+            
+            console.log("returning from manage new email " , allMessages);
             return allMessages;
             // let unreadMeassge = await  getLatestUnreadMessage(authClient);
             // return unreadMeassge;

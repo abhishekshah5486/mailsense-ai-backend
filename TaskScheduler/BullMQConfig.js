@@ -39,7 +39,7 @@ async function emptyQueues() {
 async function empty(){
   await emptyQueues();
 }
-empty();
+// empty();
 
 module.exports = { 
   emailQueue, 

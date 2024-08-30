@@ -65,6 +65,9 @@ function retrieveEmailFromString(emailString) {
 
 // Format the thread of messages and generate a response
 const formattedEmailThread = (thread) => {
+    if(thread==null){
+        return null;
+    }
     const userEmail = thread[thread.length - 1]["to"];
     const formattedThread = thread.map((threadMessage) => {
         const role = threadMessage["from"].includes(userEmail) ? 'assistant' : 'user';
@@ -93,6 +96,7 @@ const generateResponse = async (thread) => {
         return {
             from : fromEmail,
             body: response.choices[0].message.content,
+            label : "Interested"
         };
     } catch (err) {
         throw err;

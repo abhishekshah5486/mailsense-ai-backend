@@ -11,6 +11,7 @@ app.use(cors());
 const userRoutes = require('./Routes/UserRoutes');
 const userAccountRoutes = require('./Routes/UserAccountRoutes');
 const gmailAuthRoutes = require('./Routes/AuthRoutes/gmailAuthRoutes');
+const gmailWatchRoutes = require('./Routes/GmailWatchRoutes');
 const newUnreadEmailRoutes = require('./Routes/NewUnreadEmailRoutes');
 
 app.use(express.json());
@@ -24,6 +25,7 @@ app.use('/users', userRoutes);
 app.use('/users/accounts', userAccountRoutes);
 app.use('', gmailAuthRoutes);
 app.use('/', newUnreadEmailRoutes);
+app.use('/gmail', gmailWatchRoutes);
 
 app.get('/', (req, res) => {
     res.send("Authorization completed succesfully");

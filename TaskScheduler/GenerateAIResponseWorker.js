@@ -13,8 +13,6 @@ const generateResponseWorker = new Worker('newEmails-queue', async (job) => {
   console.log(job.data);
   const emailData  = await generateResponse(job.data.thread);
 
-
-
   if(emailData==null){
     console.log('AI response:', 'No response');
   }
