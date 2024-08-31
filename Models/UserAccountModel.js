@@ -30,6 +30,10 @@ const userAccountSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    historyId: {
+        type: Number,
+        required: false,
+    },
     expiresAt: {
         type: Date,
         required: false

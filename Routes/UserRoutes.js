@@ -1,6 +1,6 @@
-const express = require('express');
 const router = require('express').Router();
 const userControllers = require('../Controllers/UserController');
+const authMiddleware = require('../Middlewares/AuthMiddleware');
 
 // Create a new user
 router.post('/register', userControllers.createUser);
@@ -24,6 +24,6 @@ router.get('/', userControllers.getAllUsers);
 router.get('/:userId', userControllers.getUserById);
 
 // Get current user
-router.get('/current-user', userControllers.getCurrentUser);
+router.get('/current/authenticated-user', authMiddleware, userControllers.getCurrentUser);
 
 module.exports = router;
