@@ -23,4 +23,7 @@ router.get('/', userControllers.getAllUsers);
 // Get user by id
 router.get('/:userId', userControllers.getUserById);
 
+// Get current user
+router.get('/current-user', userControllers.getCurrentUser);
+
 module.exports = router;

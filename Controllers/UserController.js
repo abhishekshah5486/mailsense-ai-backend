@@ -181,3 +181,7 @@ exports.getUserById = async (req, res) => {
         });
     }
 }
+
+
+// Get the current user
+exports.
