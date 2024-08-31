@@ -197,7 +197,15 @@ exports.getHistoryIdByEmail = async (email) => {
 // Update history id by email
 exports.updateHistoryIdByEmail = async (email, newHistoryId) => {
     try {
-        const updatedUserAccount = await userAccountModel.findOneAndUpdate()
+        const updatedUserAccount = await userAccountModel.findOneAndUpdate(
+            {accountEmail: email}, 
+            {historyId: newHistoryId}, 
+            {new: true}
+        );
+        if (updatedUserAccount) return updatedUserAccount;
+        else {
+            throw new Error(`No user found with email: ${email}`);
+        }
     } catch (err) {
         console.log('Error updating historyId:', err);
         throw err;
