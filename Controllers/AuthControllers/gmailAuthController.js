@@ -5,7 +5,7 @@ const axios = require('axios');
 const path = require('path');
 
 require('dotenv').config({path: path.join(__dirname, '../../.env')});
-const { saveUserToDb } = require('../../Controllers/UserAccountController');
+const { saveUserToDb, checkUserAccountExixtsByEmail } = require('../../Controllers/UserAccountController');
 
 const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
@@ -16,7 +16,6 @@ const oauth2Client = new google.auth.OAuth2(
 exports.getGoogleAuthUrl = async (req, res) => {
     try {
         const userId = req.params.userId;
-
         function getGoogleOAuthUrl(userId) {
     
             const rootUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
@@ -38,7 +37,6 @@ exports.getGoogleAuthUrl = async (req, res) => {
         
             return `${rootUrl}?${qs}`;
         }
-    
         const googleOAuthUrl = getGoogleOAuthUrl(userId);
         return res.status(200).json({
             success: true,
@@ -64,9 +62,15 @@ exports.handleAuthCallback = async (req, res) =>{
         });
     }
 
-    await saveUser(code, userId, Date.now());
+    const response = await saveUser(code, userId, Date.now());
+    if (response.exists){
+        // Store a flag in sessionStorage via a minimal response
+        res.cookie('alert', response.message, { httpOnly: false });
+    }
+
     const redirectUrl = 'http://localhost:3000/home/email-accounts';
     return res.redirect(redirectUrl);
+
 }
 
 async function saveUser(code , userId, timestamp){
@@ -79,7 +83,16 @@ async function saveUser(code , userId, timestamp){
       });
 
       const { email, iss } = await getUserEmail(data.id_token);
-      
+      // Check if the email is already automated, exists in the database
+      const userExists = await checkUserAccountExixtsByEmail(email);
+      if (userExists.success && userExists.exists){
+        return {
+            exists: true,
+            message: userExists.message,
+            userAccount: userExists.userAccount
+        };
+      }
+
       await saveUserToDb({
         userId : userId,
         accountEmail : email,

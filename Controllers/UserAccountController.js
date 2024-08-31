@@ -2,12 +2,14 @@ const userAccountModel = require('../Models/UserAccountModel');
 const {connectDB} = require('../Database/connectDB');
 const path = require('path');
 const { tryCatch } = require('bullmq');
+const { exists } = require('fs');
 
 require('dotenv').config({path: path.join(__dirname, '../.env')});
 
 exports.saveUserToDb = async (userAccountDetails) => {
     try {
         // Check if the user already exists in the database
+        console.log('userAccountDetails:', userAccountDetails.userId);
         const existingUser = await userAccountModel.findOne({accountEmail: userAccountDetails.accountEmail});
         if (existingUser) {
             return;
@@ -209,5 +211,31 @@ exports.updateHistoryIdByEmail = async (email, newHistoryId) => {
     } catch (err) {
         console.log('Error updating historyId:', err);
         throw err;
+    }
+}
+
+// Check if user account exists by email
+exports.checkUserAccountExixtsByEmail = async (email) => {
+    try {
+        const existingUserAccount = await userAccountModel.findOne({accountEmail: email});
+        if (existingUserAccount){
+            return {
+                success: true,
+                exists: true,
+                message: "The email you are trying to automate is already set up for automation under another account. If you believe this is an error, please contact support.",
+                userAccount: existingUserAccount
+            }
+        }
+        else return {
+            success: true,
+            exists: false,
+            userAccount: null
+        }
+    } catch (err) {
+        return {
+            success: false,
+            message: 'An error occurred',
+            error: err.message
+        }
     }
 }
