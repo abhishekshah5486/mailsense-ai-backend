@@ -6,7 +6,8 @@ const userAccountController = require('./UserAccountController');
 
 exports.removeUserAccountFromGmailWatchByEmail = async (req, res) => {
     try {
-        const email = req.body.email;
+        const email = req.query.email;
+
         await stopWatchForUser(email);
         return res.status(200).json({
             success: true,
@@ -49,7 +50,7 @@ const createAuthClient = async (refreshToken , accessToken) => {
 }
 const stopWatchForUser = async (email) => {
     await connectDB();
-    
+
     const refreshToken = await userAccountController.getRefreshTokenByEmail(email);
     const accessToken = await userAccountController.getAccessToken(email);
     
