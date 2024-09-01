@@ -52,6 +52,151 @@ Sample 2:
     Assistant: "Sure. If you want to add something more than what's in the assignment, it is upto you.\nYou can add the demo video in the github repo's README file."
 `;
 
+const systemPromptToGenerateLabel = `
+You are an AI assistant designed to categorize emails into three specific categories: "Interested," "Not Interested," or "More Information." Your task is to analyze the content of an email and assign it the most appropriate label based on the following criteria:
+
+1. Interested: The email shows a positive inclination or willingness to engage further on the topic discussed. The email indicates a positive response toward the product, service, or offer. 
+
+    1. Look for keywords and phrases like "interested," "keen," "excited," "looking forward," "ready to proceed," "sign me up," "purchase," or "buy."
+    2. Identify action-oriented language that suggests a desire to take the next step, such as "What are the next steps?", "How can I get started?", "Can we schedule a call?", or "Please send me more details."
+    3. Analyze if the sentiment of the email is positive, enthusiastic, or indicates approval or agreement.
+    4. Check for questions related to pricing, delivery times, terms of service, or how to proceed with a purchase or demo.
+    5. Look for explicit requests for engagement, such as asking for meetings, demos, or trials.
+    6. Indicators: Look for words or phrases that express interest or a desire for engagement, such as "I'm interested," "I'd like to know more," "Please provide more details," or "Let's proceed."
+    7. 
+
+2. Not Interested: The email clearly indicates a lack of interest, desire to disengage, or a negative stance on the topic discussed. The email indicates that the recipient is not interested in the product, service, or offer.
+
+    1. Look for phrases like "not interested," "no thanks," "decline," "not at this time," "we’re good," "no longer," "already covered," or "not a fit."
+    2. Analyze if the sentiment of the email is negative, dismissive, or rejecting tone.
+    3. Identify explicit statements of decline, such as "We are not interested," "Please remove us from your mailing list," "We do not need this service," or "No further contact needed."
+    4. Check if there are no follow-up requests, ending the conversation.
+    5. Look for mentions of alternative solutions or that they are using or have chosen a different product.
+
+3. More Information: The email suggests that the recipient needs additional details before making a decision.
+
+    1. Look for phrases like "more details," "more information," "clarification," "explain," "understand better," or "elaborate."
+    2. Indicators: Phrases such as "could you clarify," "I'd like to understand more about," "what does this mean," "please explain," or "I'm not clear on" are present.
+    3. Identify requests for specific information about features, benefits, use cases, integrations, compatibility, or customization options.
+    4. Analyze if the sentiment is neutral or mixed, indicating a need for further clarification, indicating neither strong interest nor disinterest but rather a need for more details.
+    5. Look for comparative questions such as "How does this compare with...?" or "What makes your product different?"
+    6. Check for inquiries about conditions, guarantees, warranties, or trial periods.
+    7. The email asks for more detailed information, clarification, examples, or comparisons to better understand the subject.
+
+BASED ON THESE CRITERIA, ANALYZE THE FOLLOWING EMAIL CONTENT AND PROVIDE THE MOST APPROPRIATE LABEL:
+RESPOND WITH ONLY THE LABEL: "INTERESTED," "NOT INTERESTED," OR "MORE INFORMATION."
+
+**SAMPLE EMAILS AND RESPONSES
+SAMPLE 1:
+Email Content:
+
+    Subject: Inquiry About Your Recent Blog Post
+
+    Hi Team,
+
+    I read your recent blog post on AI advancements, and I found it incredibly insightful. I’m particularly interested in the section discussing natural language processing techniques. Could you provide more information on the specific tools you use and any upcoming webinars on this topic?
+
+    Looking forward to your response.
+
+    Best regards,
+    John Doe
+
+Response Label: Interested
+
+Explanation:
+The email shows a positive tone, explicitly expresses interest in a specific topic, and requests additional information, indicating a willingness to engage further.
+
+
+SAMPLE 2:
+Email Content:
+
+    Subject: Re: Follow-Up on Proposal
+
+    Hi,
+
+    Thank you for the proposal. After reviewing it, we have decided not to proceed with your services at this time. We are currently focusing on other priorities and will not be considering additional vendors.
+
+    Please remove us from your mailing list.
+
+    Best,
+    Jane Smith
+
+Response Label: Not Interested
+
+Explanation:
+The email clearly states a lack of interest in proceeding further, requests to be removed from the mailing list, and does not ask for additional information or engagement.
+
+
+SAMPLE 3:
+Email Content:
+
+    Subject: Questions Regarding Collaboration
+
+    Hello,
+
+    I’m interested in potentially collaborating on your upcoming project, but I have a few questions. Could you clarify the timeline for the project and the specific roles you are looking to fill? Additionally, I would like to understand the budget range you have in mind.
+
+    Thank you,
+    Alex Johnson
+
+Response Label: More Information
+
+Explanation:
+The email expresses an interest in collaboration but asks for more details to better understand the project scope, timeline, and budget, indicating a need for additional information before making a decision.
+
+SAMPLE 4:
+Email Content:
+
+    Subject: Re: Your Invitation to the Seminar
+
+    Dear Organizers,
+
+    Thank you for the invitation to your seminar on digital marketing trends. I am very interested in attending and would like to reserve a spot. Could you please send me the registration details and any preparatory materials?
+
+    Warm regards,
+    Emily Chen
+
+Response Label: Interested
+
+Explanation:
+The email expresses clear interest in attending the seminar and requests further action by asking for registration details, demonstrating an intention to engage.
+
+
+SAMPLE 5:
+Email Content:
+
+    Subject: Re: Product Demo Follow-Up
+
+    Hello,
+
+    Thank you for the demo. After discussing with our team, we’ve decided that your software does not fit our current needs. We appreciate your time but won’t be moving forward.
+
+    Best wishes,
+    Mark Wilson
+
+Response Label: Not Interested
+
+Explanation:
+The email explicitly states a decision not to move forward with the product, indicating a lack of interest in continuing the conversation.
+
+
+SAMPLE 6:
+Email Content:
+
+    Subject: Clarification Needed on Contract Terms
+
+    Hi,
+
+    I have reviewed the contract terms you sent over, but I need some clarification on the payment schedule and the deliverables timeline. Could you please provide more specific details on these points?
+
+    Thank you,
+    Sophia Martinez
+
+Response Label: More Information
+
+Explanation:
+The email indicates a need for further clarification about specific contract terms before the recipient can proceed, demonstrating a request for additional information.
+`;
 
 function retrieveEmailFromString(emailString) {
     const arr = emailString.split(' ');
@@ -76,29 +221,63 @@ const formattedEmailThread = (thread) => {
             content: threadMessage["body"]
         }
     });
-    formattedThread.unshift({
-        role: 'system',
-        content: systemPromptToGenerateBodyResponse
-    })
     return formattedThread;
 }
 
 const generateResponse = async (thread) => {
     try {
         const formattedThread = formattedEmailThread(thread);
+        formattedThread.unshift({
+            role: 'system',
+            content: systemPromptToGenerateBodyResponse
+        })
         const response = await openAIClient.chat.completions.create({
             model: "gpt-4o",
             messages: formattedThread,
+            temperature: 0.2,
         })
         // Extract and return the generated message from the response
         const fromEmail = retrieveEmailFromString(thread[thread.length-1]["to"]);
 
-        return {
-            from : fromEmail,
-            body: response.choices[0].message.content,
-            label : "Interested"
-        };
+        // Generate label based on the context of the emails
+        return generateLabel(thread).then((generatedLabel) => {
+            return {
+                from: fromEmail,
+                body: response.choices[0].message.content,
+                label: generatedLabel
+            };
+        }); 
     } catch (err) {
+        throw err;
+    }
+}
+
+// Generate a label for an input thread
+const generateLabel = async (thread) => {
+    try {
+        const formattedThread = formattedEmailThread(thread);
+        formattedThread.unshift({
+            role: 'system',
+            content: systemPromptToGenerateLabel
+        })
+        const response = await openAIClient.chat.completions.create({
+            model: "gpt-4o",
+            messages: formattedThread,
+            temperature: 0.2,
+        })
+        console.log(response.choices[0].message.content);
+        const responseContent =  response.choices[0].message.content;
+        // Check if the responseContent contains the label MORE INFORMATION
+        if (responseContent.toLowerCase().includes("more information")){
+            return "More Information";
+        }
+        // Check if the responseContent contains the label INTERESTED
+        else if (responseContent.toLowerCase().includes("interested")){
+            return "Interested";
+        }
+        return "Not Interested";
+    } catch (err) {
+        console.log(err.message);
         throw err;
     }
 }

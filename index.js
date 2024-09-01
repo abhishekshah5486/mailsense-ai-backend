@@ -2,17 +2,16 @@ const express = require('express');
 const mongoose = require('mongoose');
 const sendEmailWorker = require('./TaskScheduler/SendEmailWorker');
 const {connectDB} = require('./Database/connectDB');
-
-const app = express();
-require('dotenv').config();
-const cors = require('cors');
-app.use(cors());
-
 const userRoutes = require('./Routes/UserRoutes');
 const userAccountRoutes = require('./Routes/UserAccountRoutes');
 const gmailAuthRoutes = require('./Routes/AuthRoutes/gmailAuthRoutes');
 const gmailWatchRoutes = require('./Routes/GmailWatchRoutes');
 const newUnreadEmailRoutes = require('./Routes/NewUnreadEmailRoutes');
+
+const app = express();
+require('dotenv').config();
+const cors = require('cors');
+app.use(cors());
 
 app.use(express.json());
 // Connect to MongoDB Database
