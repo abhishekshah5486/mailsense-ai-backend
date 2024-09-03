@@ -1,6 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const sendEmailWorker = require('./TaskScheduler/SendEmailWorker');
+const { sendEmailWorker } = require('./TaskScheduler/SendEmailWorker');
+const { generateResponseWorker } = require('./TaskScheduler/GenerateAIResponseWorker');
+const { getEmailWorker } = require('./TaskScheduler/GetEmailWorker');
+
 const {connectDB} = require('./Database/connectDB');
 const userRoutes = require('./Routes/UserRoutes');
 const userAccountRoutes = require('./Routes/UserAccountRoutes');
