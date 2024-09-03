@@ -70,14 +70,6 @@ PROJECT_ID=your_project_id
 JWT_SECRET=your_jwt_secret
 ```
 
-### Proxy Configuration
-
-Update the `proxy` field in your `package.json` file if your backend API runs on a different port:
-
-```json
-"proxy": "http://localhost:8081"
-```
-
 ## Running the Application
 
 To start the application in production mode, use:
